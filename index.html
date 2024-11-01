@@ -1,0 +1,199 @@
+<html>
+    <head>
+        <base href="">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>قنوات فضائية مختارة</title><style>
+    body {
+        font-family: Arial, sans-serif;
+        direction: rtl;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+    }
+    header {
+        background-color: #014919;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    nav {
+        background-color: rgb(30, 180, 80);
+        padding: 10px;
+    }
+    nav select {
+        margin: 5px;
+        padding: 5px;
+    }
+    main {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        padding: 20px;
+    }
+    .channel {
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin: 10px;
+        padding: 10px;
+        width: 200px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .channel:hover {
+        transform: scale(1.05);
+    }
+    .channel img {
+        width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+    #player {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: black;
+        padding: 20px;
+        border-radius: 10px;
+        display: none;
+    }
+    #close-player {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: white;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+    <header>
+        <h1>قنوات فضائية مختارة</h1>
+        <p>شاهد القنوات التلفزيونية المباشرة من جميع أنحاء العالم</p>
+    </header>
+    <nav>
+        <select id="country-select">
+            <option value="">إختر البلد</option>
+            <option value="المغرب">المغرب</option>
+            <option value="مصر">مصر</option>
+            <option value="السعودية">السعودية</option>
+            <option value="البحرين">البحرين</option>
+            <option value=""></option>
+            <!-- Add more countries as needed -->
+        </select>
+        <select id="category-select">
+            <option value="">إختر الباقة</option>
+            <option value="القرآن الكريم">القرآن الكريم</option>
+            <option value="إسلامية دعوية">إسلامية دعوية</option>
+            <option value="السنة">السنة</option>
+            <option value=""></option>
+            <option value=""></option>
+            <!-- Add more categories as needed -->
+        </select>
+    </nav>
+    <main id="channel-list">
+        <!-- Channels will be dynamically added here -->
+    </main>
+    <div id="player">
+        <span id="close-player">&times;</span>
+        <video id="video-player" width="640" height="360" controls>
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.1.5/hls.min.js"></script>
+    <script>
+        const channels = [
+            //القرآن الكريم
+            {name:"قناة البحرين للقرآن الكريم",country:"البحرين",category:"القرآن الكريم",logo:"https://dawa.center/images/626c5f0890dff.png",stream:"https://5c7b683162943.streamlock.net/live/ngrp:bahrainquran_all/chunklist_w1667543928_b2487000.m3u8"},
+            {name:"قناة القران الكريم السعودية",country:"السعودية",category:"القرآن الكريم",logo:"http://jawaltv.com/images/ar/ksa-quran.jpg",stream:"https://al-ekhbaria-prod-dub.shahid.net/out/v1/9885cab0a3ec4008b53bae57a27ca76b/index_6.m3u8"},
+            {name:"قناة المجد الفضائية",country:"السعودية",category:"القرآن الكريم",logo:"http://jawaltv.com/images/ar/almajd.jpg",stream:"https://edge66.magictvbox.com/liveApple/al_majd/tracks-v1a1/mono.m3u8"},
+            {name:"قناة مصر للقرآن كريم",country:"مصر",category:"القرآن الكريم",logo:"http://jawaltv.com/images/ar/quranegypttv.jpg",stream:"https://edge66.magictvbox.com/liveApple/misr_quraan_kareem/tracks-v1a1/mono.m3u8"},
+
+            //إسلامية دعوية
+            {name:"قناة نور دبي",country:"الإمارات العربية",category:"إسلامية دعوية",logo:"http://jawaltv.com/images/ar/noor_dubai.jpg",stream:"https://dmiffthftl.cdn.mangomolo.com/noordubaitv/smil:noordubaitv.smil/chunklist_b2400000.m3u8"},
+            {name:"قناة الأنيس",country:"الجزائر",category:"إسلامية دعوية",logo:"https://upload.wikimedia.org/wikipedia/ar/thumb/d/d1/Elanislogo.png/420px-Elanislogo.png",stream:"https://el11.elahmad.com/tv708_www.elahmad.com_alinsen/tracks-v1a1/mono.m3u8?token=fc8d4b712b65017e9cc8f9fd8a2f003a93617196-56e9bd583fe80b1c11b2ae76828c997e-1730486457-1730475657"},
+            {name:"قناة إقرأ",country:"السعودية",category:"إسلامية دعوية",logo:"https://www.iqraa.com/images/lastlogo1.png",stream:"https://iqraa-live.ercdn.net/iqraa/iqraa.m3u8"},
+            {name:"Iqraa Europe TV",country:"السعودية",category:"إسلامية دعوية",logo:"http://jawaltv.com/images/ar/iqraa.jpg",stream:"https://iqraa-live.ercdn.net/iqraa/iqraa_576p.m3u8"},
+            {name:"قناة مكة المكرمة",country:"السعودية",category:"إسلامية دعوية",logo:"http://jawaltv.com/images/ar/makkahtv.jpg",stream:"https://media2.streambrothers.com:1936/8122/8122/playlist.m3u8"},
+            {name:"قناة المعالي",country:"الكويت",category:"إسلامية دعوية",logo:"https://upload.wikimedia.org/wikipedia/ar/3/30/%D8%B4%D8%B9%D8%A7%D8%B1_%D9%82%D9%86%D8%A7%D8%A9_%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D9%84%D9%8A.png",stream:"https://kali.vdopanel.com:3797/live/bashaclicklive.m3u8"},
+            {name:"قناة الاثراء",country:"الكويت",category:"إسلامية دعوية",logo:"http://jawaltv.com/images/ar/ethraa.jpg",stream:"https://kwtethta.cdn.mangomolo.com/eth/smil:eth.stream.smil/chunklist_b550000_t64MzYwcA==.m3u8"},
+            {name:"فناة الزيتونة",country:"تونس",category:"إسلامية دعوية",logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLjLiytqxPgmkOq6njWDu8ybGCD8MYe7QHFw&s",stream:"https://el11.elahmad.com/tv707_www.elahmad.com_zitouna/tracks-v1a1/mono.m3u8?token=a7de8a233ed65b8b4c9626eb58635359cf62155b-cfd61a6a9732e8334678241173e513af-1729630170-1729619370"},
+            {name:"قناة دعوة",country:"دولية",category:"إسلامية دعوية",logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYdpDpmAGcYSF-SBEpt-OJp89yvOJuqJ-Yzw&s",stream:"http://51.15.246.58:8081/daawahtv/daawahtv2/playlist.m3u8"},
+            {name:"ISLAM CHANNEL TV",country:"دولية",category:"إسلامية دعوية",logo:"http://jawaltv.com/images/fr/islamchannel.jpg",stream:"https://live.islamchannel.tv/live11/islamtv_english/bitrate1.isml/live.m3u8"},
+            {name:"HUDA TV",country:"دولية",category:"إسلامية دعوية",logo:"http://jawaltv.com/images/ar/hudatv.jpg",stream:"https://cdn.bestream.io:19360/elfaro1/elfaro1.m3u8"},
+            {name:"Peace Tv",country:"دولية",category:"إسلامية دعوية",logo:"https://upload.wikimedia.org/wikipedia/en/5/59/Peace_TV_official_logo.png",stream:"https://dzkyvlfyge.erbvr.com/PeaceTvEnglish/tracks-v3a1/mono.m3u8?sid=1HMzCkPttEis5dAQLYGvpQ&bvr_flags=1&bvr_ch=PeaceTvEnglish&bvr_bw=2340000"},
+            {name:"قناة الاستقامة",country:"سلطنة عمان",category:"إسلامية دعوية",logo:"http://jawaltv.com/images/ar/istiqamatv.jpg",stream:"http://jmc-live.ercdn.net/alistiqama/alistiqama_576p.m3u8"},
+            {name:"قناة الفتح أطفال",country:"مصر",category:"إسلامية دعوية",logo:"https://yt3.googleusercontent.com/EsiRniEuEdKtaiTzQsdU0ZW5EDSB04_ktk1hTsjOWgr1ksR1S8aLnLA43lhoLifjqbPFqDF_4Zk=s160-c-k-c0x00ffffff-no-rj",stream:"https://alfat7-q.com:5443/LiveApp/streams/434833549141598440488987.m3u8"},
+            {name:"قناة الفتح سنة",country:"مصر",category:"إسلامية دعوية",logo:"https://alfath.tv/logo1.png",stream:"https://alfat7-q.com:5443/LiveApp/streams/986613792230697141226562.m3u8"},
+            {name:"قناة الفتح ",country:"مصر",category:"إسلامية دعوية",logo:"https://alfath.tv/logo1.png",stream:"https://alfat7-q.com:5443/LiveApp/streams/515112551489055772942045.m3u8"},
+            {name:"قناة الناس",country:"مصر",category:"إسلامية دعوية",logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Logoelnas.png/420px-Logoelnas.png",stream:"https://el22.elahmad.com/tv707_www.elahmad.com_elnastv/tracks-v1a1/mono.m3u8?token=21441fa43bdc7fe386afc115b2a28ec72c58bfc1-fd283ee982dc3d4f2d52db5b18af7872-1729521062-1729510262"},
+            {name:"قتاة الرحمة",country:"مصر",category:"إسلامية دعوية",logo:"https://upload.wikimedia.org/wikipedia/ar/5/53/%D8%B4%D8%B9%D8%A7%D8%B1_%D9%82%D9%86%D8%A7%D8%A9_%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D8%A9_%D8%A7%D9%84%D9%81%D8%B6%D8%A7%D8%A6%D9%8A%D8%A9.png",stream:"https://el11.elahmad.com/tv707_www.elahmad.com_alrahma/tracks-v1a1/mono.m3u8?token=f94fe7ed3da0e6ea9d793b666846f8ba7c7cfe01-fae8c7f5bcb88c99518b92a3c32b6837-1729624869-1729614069"},
+            {name:"قناة أزهري",country:"مصر",category:"إسلامية دعوية",logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1zNVPt3J9RMPMUr_3zOdLL0IVoZPeVjXOWg&s",stream:"https://edge66.magictvbox.com/liveApple/azhari/tracks-v1a1/mono.m3u8"},
+            {name:"قناة صفا",country:"مصر",category:"إسلامية دعوية",logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJehbaEKdaiEkiC8NjHaebIA_ZI2rUuNcUrQ&s",stream:"https://el11.elahmad.com/tv707_www.elahmad.com_safatv/tracks-v1a1/mono.m3u8?token=04b71d2fbea2e3bdeb734abeb738658b2bcdc4df-a5529358eec100a4f855552dfa7d9c49-1729625228-1729614428"},
+            //السنة
+            {name:"السنة النبوية",country:"السعودية",category:"السنة",logo:"https://i.pinimg.com/564x/55/16/ab/5516abd3744c3d0b0a7b28bedd5474c0.jpg",stream:"https://sbc-prod-dub-enc.edgenextcdn.net/out/v1/b09bbb8d9b684763be4211b088168de7/index_1.m3u8"},
+
+           
+        ];
+
+        const channelList = document.getElementById('channel-list');
+        const countrySelect = document.getElementById('country-select');
+        const categorySelect = document.getElementById('category-select');
+        const player = document.getElementById('player');
+        const videoPlayer = document.getElementById('video-player');
+        const closePlayer = document.getElementById('close-player');
+
+        function renderChannels() {
+            const selectedCountry = countrySelect.value;
+            const selectedCategory = categorySelect.value;
+            
+            channelList.innerHTML = '';
+            
+            channels.forEach(channel => {
+                if ((selectedCountry === '' || channel.country === selectedCountry) &&
+                    (selectedCategory === '' || channel.category === selectedCategory)) {
+                    const channelElement = document.createElement('div');
+                    channelElement.className = 'channel';
+                    channelElement.innerHTML = `
+                        <img src="${channel.logo}" alt="${channel.name} logo">
+                        <h3>${channel.name}</h3>
+                    `;
+                    channelElement.addEventListener('click', () => playChannel(channel));
+                    channelList.appendChild(channelElement);
+                }
+            });
+        }
+
+        function playChannel(channel) {
+            player.style.display = 'block';
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(channel.stream);
+                hls.attachMedia(videoPlayer);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    videoPlayer.play();
+                });
+            } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                videoPlayer.src = channel.stream;
+                videoPlayer.addEventListener('loadedmetadata', function() {
+                    videoPlayer.play();
+                });
+            }
+        }
+
+        closePlayer.addEventListener('click', () => {
+            player.style.display = 'none';
+            videoPlayer.pause();
+            videoPlayer.src = '';
+        });
+
+        countrySelect.addEventListener('change', renderChannels);
+        categorySelect.addEventListener('change', renderChannels);
+
+        renderChannels();
+    </script>
+</body></html>
