@@ -1,4 +1,5 @@
-<html><head><base href="." target="_blank">
+<html>
+   <head><base href="." target="_blank">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>IPTV Player pour Smart TV Samsung</title>
@@ -42,12 +43,11 @@
     }
 
     .channel-item {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: inline-block;
         min-width: 200px;
         height: 50px;
-        padding: 10px 20px;
+        line-height: 50px;
+        padding: 0 20px;
         margin: 0 10px;
         background: #333;
         border-radius: 5px;
@@ -55,161 +55,81 @@
         transition: all 0.3s ease;
         border: 2px solid transparent;
         font-size: 16px;
+        text-align: center;
+        color: white;
+        text-decoration: none;
     }
 
     .channel-item:hover, .channel-item:focus {
         background: #0066cc;
-        transform: scale(1.05);
         border-color: #fff;
     }
 
     .channel-item.active {
         background: #0099ff;
         border-color: #fff;
-        transform: scale(1.1);
-    }
-
-    ::-webkit-scrollbar {
-        height: 10px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: #222;
-        border-radius: 5px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #444;
-        border-radius: 5px;
     }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
     <div class="container">
         <video id="videoPlayer" controls autoplay></video>
-        <div class="playlist" id="playlist"></div>
+        <div class="playlist" id="playlist">
+            <a href="javascript:void(0)" class="channel-item" onclick="playChannel(0)">France 24</a>
+            <a href="javascript:void(0)" class="channel-item" onclick="playChannel(1)">Arte</a>
+            <a href="javascript:void(0)" class="channel-item" onclick="playChannel(2)">TV5 Monde</a>
+        </div>
     </div>
 
 <script>
-    class IPTVPlayer {
-        constructor() {
-            this.video = document.getElementById('videoPlayer');
-            this.playlistContainer = document.getElementById('playlist');
-            this.hls = new Hls();
-            this.currentChannel = null;
-            this.playlist = [];
-            
-            document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+    const channels = [
+        {
+            title: 'France 24',
+            url: 'https://live.france24.com/live/F24_FR_HI_HLS/live_2500.m3u8'
+        },
+        {
+            title: 'Arte',
+            url: 'https://artesimulcast.akamaized.net/hls/live/2031003/artelive_fr/index.m3u8'
+        },
+        {
+            title: 'TV5 Monde',
+            url: 'https://ott.tv5monde.com/Content/HLS/Live/channel(info)/index.m3u8'
         }
+    ];
 
-        async loadPlaylist(url) {
-            try {
-                const response = await fetch(url);
-                const data = await response.text();
-                this.parseM3U8(data);
-            } catch (error) {
-                console.error('Erreur de chargement de la playlist:', error);
-            }
-        }
+    const video = document.getElementById('videoPlayer');
 
-        parseM3U8(content) {
-            const lines = content.split('\n');
-            let channel = {};
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (line.startsWith('#EXTINF:')) {
-                    const titleMatch = line.match(/,(.+)$/);
-                    if (titleMatch) {
-                        channel.title = titleMatch[1].trim();
-                    }
-                } else if (line.startsWith('http')) {
-                    channel.url = line;
-                    if (channel.title && channel.url) {
-                        this.playlist.push({...channel});
-                    }
-                    channel = {};
-                }
-            }
+    function playChannel(index) {
+        const channel = channels[index];
+        if (!channel) return;
 
-            this.renderPlaylist();
-            if (this.playlist.length > 0) {
-                this.playChannel(0);
-            }
-        }
+        const items = document.querySelectorAll('.channel-item');
+        items.forEach(item => item.classList.remove('active'));
+        items[index].classList.add('active');
 
-        renderPlaylist() {
-            this.playlistContainer.innerHTML = '';
-            this.playlist.forEach((channel, index) => {
-                const channelElement = document.createElement('div');
-                channelElement.className = 'channel-item';
-                channelElement.setAttribute('tabindex', index);
-                channelElement.setAttribute('data-index', index);
-                channelElement.textContent = channel.title;
-                channelElement.onclick = () => this.playChannel(index);
-                this.playlistContainer.appendChild(channelElement);
-            });
-        }
-
-        playChannel(index) {
-            const channel = this.playlist[index];
-            if (!channel) return;
-
-            const items = document.querySelectorAll('.channel-item');
-            items.forEach(item => item.classList.remove('active'));
-            items[index].classList.add('active');
-
-            if (Hls.isSupported()) {
-                this.hls.loadSource(channel.url);
-                this.hls.attachMedia(this.video);
-                this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    this.video.play().catch(e => console.log('Erreur de lecture:', e));
-                });
-            } else if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
-                this.video.src = channel.url;
-                this.video.addEventListener('loadedmetadata', () => {
-                    this.video.play().catch(e => console.log('Erreur de lecture:', e));
-                });
-            }
-
-            this.currentChannel = index;
-            items[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        handleKeyPress(e) {
-            switch(e.keyCode) {
-                case 37: // Gauche
-                    if (this.currentChannel > 0) {
-                        this.playChannel(this.currentChannel - 1);
-                    }
-                    break;
-                case 39: // Droite
-                    if (this.currentChannel < this.playlist.length - 1) {
-                        this.playChannel(this.currentChannel + 1);
-                    }
-                    break;
-                case 13: // Enter
-                    const focused = document.activeElement;
-                    if (focused.classList.contains('channel-item')) {
-                        this.playChannel(parseInt(focused.dataset.index));
-                    }
-                    break;
-            }
-        }
+        video.src = channel.url;
+        video.play().catch(e => console.log('Erreur de lecture:', e));
     }
 
-    const player = new IPTVPlayer();
+    document.addEventListener('keydown', (e) => {
+        let currentIndex = Array.from(document.querySelectorAll('.channel-item')).findIndex(item => item.classList.contains('active'));
+        
+        switch(e.keyCode) {
+            case 37: // Gauche
+                if (currentIndex > 0) {
+                    playChannel(currentIndex - 1);
+                }
+                break;
+            case 39: // Droite
+                if (currentIndex < channels.length - 1) {
+                    playChannel(currentIndex + 1);
+                }
+                break;
+        }
+    });
 
-    // Playlist de démonstration
-    const demoPlaylist = `#EXTM3U
-#EXTINF:-1,France 24
-https://live.france24.com/live/F24_FR_HI_HLS/live_2500.m3u8
-#EXTINF:-1,Arte
-https://artesimulcast.akamaized.net/hls/live/2031003/artelive_fr/index.m3u8
-#EXTINF:-1,TV5 Monde
-https://ott.tv5monde.com/Content/HLS/Live/channel(info)/index.m3u8`;
-
-    player.parseM3U8(demoPlaylist);
+    // Jouer la première chaîne au chargement
+    playChannel(0);
 </script>
-</body></html>
+</body>
+</html>
