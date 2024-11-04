@@ -1,5 +1,6 @@
 <html>
-   <head><base href="." target="_blank">
+   <head>
+      <base href="." target="_blank">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>IPTV Player pour Smart TV Samsung</title>
@@ -39,12 +40,25 @@
         z-index: 2;
     }
 
+    #videoPlayer::-webkit-media-controls-panel {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    #videoPlayer::-webkit-media-controls-play-button,
+    #videoPlayer::-webkit-media-controls-timeline,
+    #videoPlayer::-webkit-media-controls-current-time-display,
+    #videoPlayer::-webkit-media-controls-time-remaining-display,
+    #videoPlayer::-webkit-media-controls-mute-button,
+    #videoPlayer::-webkit-media-controls-volume-slider {
+        display: block;
+    }
+
     .playlist {
         height: 15%;
         background: rgba(0, 0, 0, 0.9);
         overflow-x: auto;
         white-space: nowrap;
-        padding: 10px;
+        padding: 15px;
         display: flex;
         align-items: center;
         position: relative;
@@ -55,39 +69,53 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 200px;
-        height: 60px;
-        padding: 0 20px;
-        margin: 0 10px;
-        background: #333;
-        border-radius: 5px;
+        min-width: 250px;
+        height: 70px;
+        padding: 0 25px;
+        margin: 0 15px;
+        background: linear-gradient(to bottom, #444, #333);
+        border-radius: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 2px solid #666;
-        font-size: 20px;
+        border: 3px solid #666;
+        font-size: 24px;
+        font-weight: bold;
         text-align: center;
         color: white;
         text-decoration: none;
         -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
 
     .channel-item:hover, .channel-item:focus {
-        background: #0066cc;
+        background: linear-gradient(to bottom, #0077dd, #0066cc);
         border-color: #fff;
         transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
     }
 
     .channel-item.active {
-        background: #0099ff;
+        background: linear-gradient(to bottom, #00aaff, #0099ff);
         border-color: #fff;
         transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
     }
 
     @media screen and (max-width: 1280px) {
         .channel-item {
-            min-width: 150px;
-            font-size: 16px;
-            height: 50px;
+            min-width: 200px;
+            font-size: 20px;
+            height: 60px;
+        }
+    }
+
+    @media screen and (max-width: 960px) {
+        .channel-item {
+            min-width: 180px;
+            font-size: 18px;
+            height: 55px;
+            padding: 0 20px;
+            margin: 0 10px;
         }
     }
 </style>
@@ -105,9 +133,9 @@
 <script>
     const channels = [
         {
-            title: 'France 24',
-url:' http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/5d767ae7b456c8cf265ce922/master.m3u8'       
-   },
+            title: 'الجزيرة',
+            url: 'https://live-hls-v3-aja.getaj.net/AJA-V3/index.m3u8'
+        },
         {
             title: 'Arte',
             url: 'https://artesimulcast.akamaized.net/hls/live/2031003/artelive_fr/index.m3u8'
