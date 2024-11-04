@@ -1,6 +1,4 @@
-<html>
-   <head>
-   <base href="." target="_blank">
+<html><head><base href="." target="_blank">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>IPTV Player pour Smart TV Samsung</title>
@@ -36,36 +34,48 @@
     .playlist {
         height: 15vh;
         background: rgba(0, 0, 0, 0.8);
-        overflow-x: scroll;
+        overflow-x: auto;
         white-space: nowrap;
         padding: 10px;
+        display: flex;
+        align-items: center;
     }
 
     .channel-item {
-        display: inline-block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 200px;
+        height: 50px;
         padding: 10px 20px;
         margin: 0 10px;
         background: #333;
         border-radius: 5px;
         cursor: pointer;
-        transition: background 0.3s;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        font-size: 16px;
     }
 
     .channel-item:hover, .channel-item:focus {
         background: #0066cc;
+        transform: scale(1.05);
+        border-color: #fff;
     }
 
     .channel-item.active {
         background: #0099ff;
+        border-color: #fff;
+        transform: scale(1.1);
     }
 
-    /* Personnalisation de la barre de défilement pour Tizen */
     ::-webkit-scrollbar {
         height: 10px;
     }
 
     ::-webkit-scrollbar-track {
         background: #222;
+        border-radius: 5px;
     }
 
     ::-webkit-scrollbar-thumb {
@@ -90,7 +100,6 @@
             this.currentChannel = null;
             this.playlist = [];
             
-            // Gestion des touches de la télécommande Samsung
             document.addEventListener('keydown', (e) => this.handleKeyPress(e));
         }
 
@@ -108,39 +117,45 @@
             const lines = content.split('\n');
             let channel = {};
             
-            lines.forEach(line => {
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
                 if (line.startsWith('#EXTINF:')) {
                     const titleMatch = line.match(/,(.+)$/);
                     if (titleMatch) {
                         channel.title = titleMatch[1].trim();
                     }
                 } else if (line.startsWith('http')) {
-                    channel.url = line.trim();
-                    this.playlist.push({...channel});
+                    channel.url = line;
+                    if (channel.title && channel.url) {
+                        this.playlist.push({...channel});
+                    }
                     channel = {};
                 }
-            });
+            }
 
             this.renderPlaylist();
+            if (this.playlist.length > 0) {
+                this.playChannel(0);
+            }
         }
 
         renderPlaylist() {
-            this.playlistContainer.innerHTML = this.playlist
-                .map((channel, index) => `
-                    <div class="channel-item" 
-                         tabindex="${index}" 
-                         data-index="${index}"
-                         onclick="player.playChannel(${index})">
-                        ${channel.title}
-                    </div>
-                `).join('');
+            this.playlistContainer.innerHTML = '';
+            this.playlist.forEach((channel, index) => {
+                const channelElement = document.createElement('div');
+                channelElement.className = 'channel-item';
+                channelElement.setAttribute('tabindex', index);
+                channelElement.setAttribute('data-index', index);
+                channelElement.textContent = channel.title;
+                channelElement.onclick = () => this.playChannel(index);
+                this.playlistContainer.appendChild(channelElement);
+            });
         }
 
         playChannel(index) {
             const channel = this.playlist[index];
             if (!channel) return;
 
-            // Mise à jour de la classe active
             const items = document.querySelectorAll('.channel-item');
             items.forEach(item => item.classList.remove('active'));
             items[index].classList.add('active');
@@ -149,16 +164,17 @@
                 this.hls.loadSource(channel.url);
                 this.hls.attachMedia(this.video);
                 this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    this.video.play();
+                    this.video.play().catch(e => console.log('Erreur de lecture:', e));
                 });
             } else if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
                 this.video.src = channel.url;
                 this.video.addEventListener('loadedmetadata', () => {
-                    this.video.play();
+                    this.video.play().catch(e => console.log('Erreur de lecture:', e));
                 });
             }
 
             this.currentChannel = index;
+            items[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         handleKeyPress(e) {
@@ -183,22 +199,17 @@
         }
     }
 
-    // Initialisation du lecteur
     const player = new IPTVPlayer();
 
-    // Exemple d'utilisation : chargez votre playlist M3U8
-    // player.loadPlaylist('URL_DE_VOTRE_PLAYLIST_M3U8');
-
-    // Pour tester, vous pouvez utiliser une playlist de démonstration
+    // Playlist de démonstration
     const demoPlaylist = `#EXTM3U
-#EXTINF:-1,Chaîne Demo 1
-https://live.paltodaytv.com/paltv/live/playlist.m3u8
-#EXTINF:-1,Chaîne Demo 2
-https://live-hls-v3-aja.getaj.net/AJA-V3/index.m3u8
-#EXTINF:-1,Chaîne Demo 3
-https://d1cy85syyhvqz5.cloudfront.net/v1/master/7b67fbda7ab859400a821e9aa0deda20ab7ca3d2/aljazeeraLive/AJE/index.m3u8`;
+#EXTINF:-1,France 24
+https://live.france24.com/live/F24_FR_HI_HLS/live_2500.m3u8
+#EXTINF:-1,Arte
+https://artesimulcast.akamaized.net/hls/live/2031003/artelive_fr/index.m3u8
+#EXTINF:-1,TV5 Monde
+https://ott.tv5monde.com/Content/HLS/Live/channel(info)/index.m3u8`;
 
     player.parseM3U8(demoPlaylist);
 </script>
-</body>
-</html>
+</body></html>
