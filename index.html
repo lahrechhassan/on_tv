@@ -1,6 +1,6 @@
 <html>
    <head>
-   
+      <base href="." target="_blank">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>IPTV Player pour Smart TV Samsung</title>
@@ -124,7 +124,7 @@
     <div class="container">
         <video id="videoPlayer" controls playsinline webkit-playsinline></video>
         <div class="playlist" id="playlist">
-            <div class="channel-item" onclick="playChannel(0)" tabindex="0">الجزيرة</div>
+            <div class="channel-item" onclick="playChannel(0)" tabindex="0">France 24</div>
             <div class="channel-item" onclick="playChannel(1)" tabindex="0">Arte</div>
             <div class="channel-item" onclick="playChannel(2)" tabindex="0">TV5 Monde</div>
         </div>
@@ -133,8 +133,8 @@
 <script>
     const channels = [
         {
-            title: 'الجزيرة',
-            url: 'https://live-hls-v3-aja.getaj.net/AJA-V3/index.m3u8'
+            title: 'France 24',
+            url: 'https://live-hls-web-f24-fr.akamaized.net/i/F24_FR_HI_HLS@355753/index_1200_av-p.m3u8'
         },
         {
             title: 'Arte',
@@ -147,8 +147,11 @@
     ];
 
     const video = document.getElementById('videoPlayer');
+    let activeHls = null;
+    
     video.addEventListener('error', function(e) {
         console.error('Video Error:', e);
+        alert('Erreur de lecture: ' + (video.error ? video.error.message : 'Erreur inconnue'));
     });
 
     function playChannel(index) {
@@ -156,27 +159,77 @@
             const channel = channels[index];
             if (!channel) return;
 
+            // Clean up previous HLS instance
+            if (activeHls) {
+                activeHls.destroy();
+                activeHls = null;
+            }
+
             const items = document.querySelectorAll('.channel-item');
             items.forEach(item => item.classList.remove('active'));
             items[index].classList.add('active');
 
-            video.src = channel.url;
-            const playPromise = video.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.error('Playback Error:', error);
+            if (Hls.isSupported()) {
+                const hls = new Hls({
+                    debug: true,
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 90
                 });
+                
+                activeHls = hls;
+                hls.loadSource(channel.url);
+                hls.attachMedia(video);
+                
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play().catch(function(error) {
+                        console.error('Playback Error:', error);
+                        alert('Erreur de lecture: ' + error.message);
+                    });
+                });
+                
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    console.error('HLS Error:', data);
+                    if (data.fatal) {
+                        switch(data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                alert('Erreur HLS fatale: ' + data.type);
+                                break;
+                        }
+                    }
+                });
+            }
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = channel.url;
+                video.play().catch(function(error) {
+                    console.error('Playback Error:', error);
+                    alert('Erreur de lecture: ' + error.message);
+                });
+            }
+            else {
+                alert('Votre navigateur ne supporte pas la lecture HLS');
             }
         } catch (error) {
             console.error('Channel Play Error:', error);
+            alert('Erreur: ' + error.message);
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(() => {
-            playChannel(0);
-        }, 1000);
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.4.3';
+        script.onload = function() {
+            setTimeout(() => {
+                playChannel(0);
+            }, 1000);
+        };
+        document.head.appendChild(script);
     });
 
     document.addEventListener('keydown', function(e) {
