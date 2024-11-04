@@ -17,67 +17,88 @@
         width: 100vw;
         height: 100vh;
         overflow: hidden;
+        position: relative;
     }
 
     .container {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         display: flex;
         flex-direction: column;
+        z-index: 1;
     }
 
     #videoPlayer {
         width: 100%;
-        height: 85vh;
+        height: 85%;
         background: #111;
+        position: relative;
+        z-index: 2;
     }
 
     .playlist {
-        height: 15vh;
-        background: rgba(0, 0, 0, 0.8);
+        height: 15%;
+        background: rgba(0, 0, 0, 0.9);
         overflow-x: auto;
         white-space: nowrap;
         padding: 10px;
         display: flex;
         align-items: center;
+        position: relative;
+        z-index: 3;
     }
 
     .channel-item {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         min-width: 200px;
-        height: 50px;
-        line-height: 50px;
+        height: 60px;
         padding: 0 20px;
         margin: 0 10px;
         background: #333;
         border-radius: 5px;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 2px solid transparent;
-        font-size: 16px;
+        border: 2px solid #666;
+        font-size: 20px;
         text-align: center;
         color: white;
         text-decoration: none;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
     }
 
     .channel-item:hover, .channel-item:focus {
         background: #0066cc;
         border-color: #fff;
+        transform: scale(1.05);
     }
 
     .channel-item.active {
         background: #0099ff;
         border-color: #fff;
+        transform: scale(1.05);
+    }
+
+    @media screen and (max-width: 1280px) {
+        .channel-item {
+            min-width: 150px;
+            font-size: 16px;
+            height: 50px;
+        }
     }
 </style>
 </head>
 <body>
     <div class="container">
-        <video id="videoPlayer" controls autoplay></video>
+        <video id="videoPlayer" controls playsinline webkit-playsinline></video>
         <div class="playlist" id="playlist">
-            <a href="javascript:void(0)" class="channel-item" onclick="playChannel(0)">France 24</a>
-            <a href="javascript:void(0)" class="channel-item" onclick="playChannel(1)">Arte</a>
-            <a href="javascript:void(0)" class="channel-item" onclick="playChannel(2)">TV5 Monde</a>
+            <div class="channel-item" onclick="playChannel(0)" tabindex="0">France 24</div>
+            <div class="channel-item" onclick="playChannel(1)" tabindex="0">Arte</div>
+            <div class="channel-item" onclick="playChannel(2)" tabindex="0">TV5 Monde</div>
         </div>
     </div>
 
@@ -98,20 +119,39 @@
     ];
 
     const video = document.getElementById('videoPlayer');
+    video.addEventListener('error', function(e) {
+        console.error('Video Error:', e);
+    });
 
     function playChannel(index) {
-        const channel = channels[index];
-        if (!channel) return;
+        try {
+            const channel = channels[index];
+            if (!channel) return;
 
-        const items = document.querySelectorAll('.channel-item');
-        items.forEach(item => item.classList.remove('active'));
-        items[index].classList.add('active');
+            const items = document.querySelectorAll('.channel-item');
+            items.forEach(item => item.classList.remove('active'));
+            items[index].classList.add('active');
 
-        video.src = channel.url;
-        video.play().catch(e => console.log('Erreur de lecture:', e));
+            video.src = channel.url;
+            const playPromise = video.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error('Playback Error:', error);
+                });
+            }
+        } catch (error) {
+            console.error('Channel Play Error:', error);
+        }
     }
 
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            playChannel(0);
+        }, 1000);
+    });
+
+    document.addEventListener('keydown', function(e) {
         let currentIndex = Array.from(document.querySelectorAll('.channel-item')).findIndex(item => item.classList.contains('active'));
         
         switch(e.keyCode) {
@@ -125,11 +165,14 @@
                     playChannel(currentIndex + 1);
                 }
                 break;
+            case 13: // Enter
+                const items = document.querySelectorAll('.channel-item');
+                if (document.activeElement.classList.contains('channel-item')) {
+                    playChannel(Array.from(items).indexOf(document.activeElement));
+                }
+                break;
         }
     });
-
-    // Jouer la première chaîne au chargement
-    playChannel(0);
 </script>
 </body>
 </html>
